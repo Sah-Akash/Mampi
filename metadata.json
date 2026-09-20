@@ -1,0 +1,6 @@
+{
+  "name": "Shaadi Budget Planner",
+  "description": "Modern, responsive Indian wedding expense and budget management app for families with multi-event tracking, vendor dues, and family contributions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
