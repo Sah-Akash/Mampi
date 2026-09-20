@@ -129,16 +129,21 @@ interface WeddingContextType {
   setIsOnboardingOpen: (open: boolean) => void;
 }
 
-const STORAGE_KEY = 'shaadi_wedding_budget_data_v1';
+const STORAGE_KEY = 'shaadi_wedding_budget_data_v2';
 
 const WeddingContext = createContext<WeddingContextType | undefined>(undefined);
 
 export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<WeddingData>(() => {
     try {
+      // Clean up previous v1 cache if any
+      localStorage.removeItem('shaadi_wedding_budget_data_v1');
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.id === 'w-mampi-akash-2026') {
+          return parsed;
+        }
       }
     } catch (e) {
       console.error('Failed to parse stored wedding data', e);

@@ -64,7 +64,7 @@ export const DashboardView: React.FC = () => {
                 {data.name}
               </h3>
               <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#80142B]/10 text-[#80142B] dark:bg-[#E2C799]/15 dark:text-[#E2C799] rounded-full">
-                Demo Data Active
+                Active Planner
               </span>
             </div>
             <p className="text-xs text-[#7D7067] dark:text-[#A89F97]">

@@ -7,11 +7,11 @@ export const OnboardingModal: React.FC = () => {
   const { isOnboardingOpen, setIsOnboardingOpen, data, updateWeddingInfo, updateWeddingBudget, addPerson, updateCategory, setActiveTab } = useWedding();
 
   const [step, setStep] = useState(1);
-  const [weddingName, setWeddingName] = useState(data.name || "Akash & Priya's Wedding");
-  const [coupleNames, setCoupleNames] = useState(data.coupleNames || "Akash & Priya");
-  const [weddingDate, setWeddingDate] = useState(data.date || '2026-12-14');
-  const [city, setCity] = useState(data.city || 'Jaipur / Delhi NCR');
-  const [budget, setBudget] = useState(data.totalBudget || 1200000);
+  const [weddingName, setWeddingName] = useState(data.name || "Mampi's Wedding Budget");
+  const [coupleNames, setCoupleNames] = useState(data.coupleNames || "Mampi & Groom");
+  const [weddingDate, setWeddingDate] = useState(data.date || '2026-11-28');
+  const [city, setCity] = useState(data.city || 'Kolkata, West Bengal');
+  const [budget, setBudget] = useState(data.totalBudget || 1100000);
   const [newPersonName, setNewPersonName] = useState('');
   const [newPersonRelation, setNewPersonRelation] = useState('Family');
 
