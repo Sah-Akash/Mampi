@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Shared wedding budget plans
+    match /weddings/{weddingId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.id is string
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 200
+        && request.resource.data.totalBudget is number
+        && request.resource.data.expenses is list;
+      allow delete: if false;
+    }
+  }
+}

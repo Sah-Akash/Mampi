@@ -66,6 +66,10 @@ export const DashboardView: React.FC = () => {
               <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#80142B]/10 text-[#80142B] dark:bg-[#E2C799]/15 dark:text-[#E2C799] rounded-full">
                 Active Planner
               </span>
+              <span className="px-2 py-0.5 text-[10px] font-bold tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 rounded-full inline-flex items-center gap-1 border border-emerald-200/60 dark:border-emerald-800/40" title="All edits & additions are synced live in real-time across all family members">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Live Cloud Sync
+              </span>
             </div>
             <p className="text-xs text-[#7D7067] dark:text-[#A89F97]">
               {data.city ? `${data.city} • ` : ''}Main Wedding:{' '}

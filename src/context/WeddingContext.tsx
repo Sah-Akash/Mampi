@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import {
   WeddingData,
   Expense,
@@ -127,9 +129,13 @@ interface WeddingContextType {
   closeVendorDetail: () => void;
   isOnboardingOpen: boolean;
   setIsOnboardingOpen: (open: boolean) => void;
+  syncStatus: 'connecting' | 'synced' | 'saving' | 'offline';
+  lastCloudSync: string | null;
+  manualSync: () => Promise<void>;
 }
 
 const STORAGE_KEY = 'shaadi_wedding_budget_data_v2';
+const WEDDING_DOC_ID = 'w-mampi-akash-2026';
 
 const WeddingContext = createContext<WeddingContextType | undefined>(undefined);
 
@@ -151,6 +157,11 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return initialWeddingData;
   });
 
+  const [syncStatus, setSyncStatus] = useState<'connecting' | 'synced' | 'saving' | 'offline'>('connecting');
+  const [lastCloudSync, setLastCloudSync] = useState<string | null>(null);
+  const isIncomingCloudUpdate = useRef(false);
+  const hasInitializedFromCloud = useRef(false);
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [activeEventId, setActiveEventId] = useState<string>(data.settings.activeEventId || 'all');
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
@@ -162,14 +173,106 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
-  // Save to localStorage whenever data changes
+  // 1. Real-time Cloud Synchronization Listener
+  useEffect(() => {
+    const docRef = doc(db, 'weddings', WEDDING_DOC_ID);
+    setSyncStatus('connecting');
+
+    const unsubscribe = onSnapshot(
+      docRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const cloudData = docSnap.data() as WeddingData;
+          if (cloudData && cloudData.id) {
+            isIncomingCloudUpdate.current = true;
+            setData(cloudData);
+            setSyncStatus('synced');
+            setLastCloudSync(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudData));
+            } catch (err) {
+              console.warn('Storage warning', err);
+            }
+          }
+        } else {
+          // If first time cloud init, seed the wedding plan to Firestore
+          setDoc(docRef, {
+            ...initialWeddingData,
+            lastUpdated: new Date().toISOString(),
+          })
+            .then(() => {
+              setSyncStatus('synced');
+              setLastCloudSync(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+            })
+            .catch((err) => {
+              console.error('Failed to seed cloud database:', err);
+              setSyncStatus('offline');
+            });
+        }
+        hasInitializedFromCloud.current = true;
+      },
+      (error) => {
+        console.warn('Real-time listener warning (using offline/local cache):', error);
+        setSyncStatus('offline');
+        hasInitializedFromCloud.current = true;
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // 2. Broadcast local changes to Firestore in real-time
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
       console.error('Failed to save wedding data to localStorage', e);
     }
+
+    // Skip write back if this update was pushed from the cloud
+    if (isIncomingCloudUpdate.current) {
+      isIncomingCloudUpdate.current = false;
+      return;
+    }
+
+    if (!hasInitializedFromCloud.current) {
+      return;
+    }
+
+    setSyncStatus('saving');
+    const timer = setTimeout(async () => {
+      try {
+        const docRef = doc(db, 'weddings', WEDDING_DOC_ID);
+        await setDoc(docRef, {
+          ...data,
+          lastUpdated: new Date().toISOString(),
+        }, { merge: true });
+        setSyncStatus('synced');
+        setLastCloudSync(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      } catch (err) {
+        console.error('Failed to sync changes to Firestore:', err);
+        setSyncStatus('offline');
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [data]);
+
+  const manualSync = async () => {
+    setSyncStatus('saving');
+    try {
+      const docRef = doc(db, 'weddings', WEDDING_DOC_ID);
+      await setDoc(docRef, {
+        ...data,
+        lastUpdated: new Date().toISOString(),
+      }, { merge: true });
+      setSyncStatus('synced');
+      setLastCloudSync(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    } catch (e) {
+      console.error('Manual sync failed:', e);
+      setSyncStatus('offline');
+    }
+  };
 
   // Apply dark mode class to root HTML
   useEffect(() => {
@@ -757,6 +860,9 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         closeVendorDetail,
         isOnboardingOpen,
         setIsOnboardingOpen,
+        syncStatus,
+        lastCloudSync,
+        manualSync,
       }}
     >
       {children}

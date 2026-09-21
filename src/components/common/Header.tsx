@@ -9,6 +9,8 @@ import {
   Sparkles,
   RotateCcw,
   SlidersHorizontal,
+  Cloud,
+  RefreshCw,
 } from 'lucide-react';
 import { formatCompactINR, formatINR } from '../../utils/formatters';
 
@@ -24,6 +26,9 @@ export const Header: React.FC = () => {
     toggleTheme,
     resetToDemoData,
     totalBudget,
+    syncStatus,
+    lastCloudSync,
+    manualSync,
   } = useWedding();
 
   const getPageMeta = () => {
@@ -119,6 +124,43 @@ export const Header: React.FC = () => {
               ))}
             </select>
           </div>
+
+          {/* Real-time Cloud Sync Indicator */}
+          <button
+            onClick={() => manualSync()}
+            title={
+              syncStatus === 'synced'
+                ? `Live synced with all family members. Last updated: ${lastCloudSync || 'just now'}. Tap to refresh.`
+                : syncStatus === 'saving'
+                ? 'Broadcasting changes to all connected devices...'
+                : syncStatus === 'connecting'
+                ? 'Connecting to real-time cloud database...'
+                : 'Working offline (cached locally). Tap to reconnect.'
+            }
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-[#E4DAC9] dark:border-[#302923] bg-white dark:bg-[#201C18] hover:border-[#80142B] dark:hover:border-[#E2C799] transition-all cursor-pointer"
+          >
+            {syncStatus === 'synced' ? (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            ) : syncStatus === 'saving' ? (
+              <RefreshCw className="w-3 h-3 text-amber-500 animate-spin" />
+            ) : syncStatus === 'connecting' ? (
+              <Cloud className="w-3 h-3 text-blue-500 animate-pulse" />
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+            )}
+            <span className="hidden md:inline text-[11px] text-[#5A4F48] dark:text-[#C5BCB4]">
+              {syncStatus === 'synced'
+                ? 'Live Synced'
+                : syncStatus === 'saving'
+                ? 'Syncing...'
+                : syncStatus === 'connecting'
+                ? 'Connecting...'
+                : 'Offline'}
+            </span>
+          </button>
 
           {/* Quick Search Button */}
           <button

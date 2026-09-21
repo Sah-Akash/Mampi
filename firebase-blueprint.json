@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "wedding": {
+      "title": "Wedding Plan",
+      "description": "Comprehensive wedding budget, expenses, events, vendors, and family member details",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the wedding"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the wedding plan"
+        },
+        "coupleNames": {
+          "type": "string",
+          "description": "Names of the couple"
+        },
+        "date": {
+          "type": "string",
+          "description": "Wedding date"
+        },
+        "totalBudget": {
+          "type": "number",
+          "description": "Allocated total budget in INR"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency code (e.g. INR)"
+        },
+        "currencySymbol": {
+          "type": "string",
+          "description": "Currency symbol (e.g. ₹)"
+        },
+        "city": {
+          "type": "string",
+          "description": "Wedding venue location"
+        },
+        "events": {
+          "type": "array",
+          "description": "List of wedding ceremonies and events"
+        },
+        "categories": {
+          "type": "array",
+          "description": "Expense category breakdowns"
+        },
+        "people": {
+          "type": "array",
+          "description": "Family members and contributors"
+        },
+        "vendors": {
+          "type": "array",
+          "description": "Vendor contracts and payments"
+        },
+        "expenses": {
+          "type": "array",
+          "description": "All logged expenses"
+        },
+        "paymentSchedules": {
+          "type": "array",
+          "description": "Upcoming due payments and milestones"
+        },
+        "settings": {
+          "type": "object",
+          "description": "Display and theme preferences"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": ["id", "name", "totalBudget", "expenses"]
+    }
+  },
+  "firestore": {
+    "/weddings/{weddingId}": {
+      "schema": "wedding",
+      "description": "Stores real-time shared wedding budget state synchronized across all family members and devices."
+    }
+  }
+}

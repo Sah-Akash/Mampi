@@ -106,4 +106,5 @@ export interface WeddingData {
     theme: 'light' | 'dark';
     activeEventId: string | 'all';
   };
+  lastUpdated?: string;
 }
